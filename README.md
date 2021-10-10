@@ -19,8 +19,49 @@
 ## Install
 
 ```sh
-npm install colvert
+npm i colvert
+
+or npm install colvert
 ```
+
+```sh
+const conv = require("colvert");
+```
+
+## Usage
+
+```sh
+
+const col = conv.hexTorgb("#0A167B");   // returns [10,22,123]
+
+const col = conv.hexTohsl("#11191B");   // returns [192,23,9]
+
+const col = conv.rgbTohex([23, 180, 60]);   // returns "#17b43c"
+
+const col = conv.randomcolor();   // returns random color(hex)
+
+
+```
+
+## Functions
+
+- rgbTohsl
+- rgbTohex
+- rgbTocmyk
+
+- hexTorgb
+- hexTohsl
+- hexTocmyk
+
+- hslTorgb
+- hslTohex
+- hslTohsv
+
+- cmykTorgb
+- cmykTohex
+- cmykTohsl
+
+- randomcolor
 
 ## Author
 
