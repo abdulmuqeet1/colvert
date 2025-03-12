@@ -56,8 +56,21 @@ const clamp = (num: number, min: number, max: number): number => {
     return Math.min(Math.max(num, min), max);
 };
 
-export { 
+const getRandomValue = (option: number | [number, number] | undefined, min: number, max: number): number => {
+    if (option === undefined) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+    } else if (Array.isArray(option)) {
+    const rangeMin = clamp(option[0], min, max);
+    const rangeMax = clamp(option[1], min, max);
+    return Math.floor(Math.random() * (rangeMax - rangeMin + 1)) + rangeMin;
+    } else {
+    return clamp(option, min, max);
+    }
+};
+
+export {
     isColorValid,
     validateOrThrow,
-    clamp
+    clamp,
+    getRandomValue,
 };

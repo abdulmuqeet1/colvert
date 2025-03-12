@@ -1,9 +1,7 @@
-import { RGB, RGBA } from "./@types";
-import { clamp, validateOrThrow, ColorConversionError } from "./utils";
-/////////////////////////
-/// rgb --> others //////
-/////////////////////////
+import { CMYK, HEX, HSL, HSV, RGB, RGBA } from "./@types";
+import { clamp, validateOrThrow, ColorConversionError, getRandomValue } from "./utils";
 
+// * RGB ///
 const rgbToHexConversion = (num: number): string => {
   let hexv = Math.round(clamp(num, 0, 255)).toString(16);
   if (hexv.length < 2) {
@@ -163,131 +161,301 @@ export const rgbaToHex = (rgba: RGBA) => {
   }
 };
 
-/////////////////////////
-/// hex --> others //////
-/////////////////////////
-const hexTorgb = (hex: string) => {
-  // const match = hex.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
-  const match = hex.toString().match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
-  if (!match) {
-    return [0, 0, 0];
-  }
-
-  let colorString = match[0];
-
-  if (match[0].length === 3) {
-    colorString = colorString
-      .split("")
-      .map((char) => {
-        return char + char;
-      })
-      .join("");
-  }
-
-  const integer = parseInt(colorString, 16);
-  const r = (integer >> 16) & 0xff;
-  const g = (integer >> 8) & 0xff;
-  const b = integer & 0xff;
-
-  return [r, g, b];
-};
-const hexTohsl = (hex: string) => {
-  return rgbTohsl(hexTorgb(hex));
-};
-const hexTohsv = (hex: string) => {
-  return rgbTohsv(hexTorgb(hex));
-};
-
-const hexTocmyk = (hex: string) => {
-  return rgbTocmyk(hexTorgb(hex));
-};
-
-const hslTorgb = (hsl: number[]) => {
-  const h = hsl[0] / 360;
-  const s = hsl[1] / 100;
-  const l = hsl[2] / 100;
-  let t2;
-  let t3;
-  let val;
-
-  if (s === 0) {
-    val = l * 255;
-    return [val, val, val];
-  }
-
-  if (l < 0.5) {
-    t2 = l * (1 + s);
-  } else {
-    t2 = l + s - l * s;
-  }
-
-  const t1 = 2 * l - t2;
-
-  const rgb = [0, 0, 0];
-  for (let i = 0; i < 3; i++) {
-    t3 = h + (1 / 3) * -(i - 1);
-    if (t3 < 0) {
-      t3++;
+// * HEX ////
+const hexTorgb = (hex: HEX): RGB => { // TODO: update name
+  try {
+    const validHex = validateOrThrow<HEX>(
+      hex, 
+      'hex',
+      'Invalid HEX value. Expected a string in format #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.'
+    );
+    
+    // Remove the hash at the start if present
+    let cleanHex = validHex.replace(/^#/, '');
+    
+    // Convert 3-digit hex to 6-digit
+    if (cleanHex.length === 3) {
+      cleanHex = cleanHex.split('').map(char => char + char).join('');
     }
-
-    if (t3 > 1) {
-      t3--;
+    
+    // Handle only RGB part for RGBA hex
+    if (cleanHex.length === 8) {
+      cleanHex = cleanHex.substring(0, 6);
+    } else if (cleanHex.length === 4) {
+      cleanHex = cleanHex.substring(0, 3);
+      cleanHex = cleanHex.split('').map(char => char + char).join('');
     }
+    
+    const bigint = parseInt(cleanHex, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    
+    return [r, g, b];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HEX to RGB: ${e.message}`);
+  }
+};
 
-    if (6 * t3 < 1) {
-      val = t1 + (t2 - t1) * 6 * t3;
-    } else if (2 * t3 < 1) {
-      val = t2;
-    } else if (3 * t3 < 2) {
-      val = t1 + (t2 - t1) * (2 / 3 - t3) * 6;
+const hexTohsl = (hex: HEX) => { // TODO: update name
+  try {
+    const validHex = validateOrThrow<HEX>(
+      hex, 
+      'hex', 
+      'Invalid HEX value. Expected a string in format #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.'
+    );
+    
+    const rgb = hexTorgb(validHex);
+    return rgbTohsl(rgb);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HEX to HSL: ${e.message}`);
+  }
+};
+
+const hexTohsv = (hex: HEX) => { // TODO: update name
+  try {
+    const validHex = validateOrThrow<HEX>(
+      hex, 
+      'hex', 
+      'Invalid HEX value. Expected a string in format #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.'
+    );
+    
+    const rgb = hexTorgb(validHex);
+    return rgbTohsv(rgb);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HEX to HSV: ${e.message}`);
+  }
+};
+
+const hexTocmyk = (hex: HEX) => {
+  try {
+    const validHex = validateOrThrow<HEX>(
+      hex, 
+      'hex', 
+      'Invalid HEX value. Expected a string in format #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.'
+    );
+    
+    const rgb = hexTorgb(validHex);
+    return rgbTocmyk(rgb);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HEX to CMYK: ${e.message}`);
+  }
+};
+
+export const hexToRgba = (hex: HEX) => {
+  try {
+    const validHex = validateOrThrow<HEX>(
+      hex, 
+      'hex', 
+      'Invalid HEX value. Expected a string in format #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.'
+    );
+    
+    // Remove the hash at the start if present
+    let cleanHex = validHex.replace(/^#/, '');
+    
+    // Handle different hex formats
+    if (cleanHex.length === 3) {
+      // Convert #RGB to #RRGGBB
+      cleanHex = cleanHex.split('').map(char => char + char).join('');
+      // Add full alpha
+      cleanHex += 'FF';
+    } else if (cleanHex.length === 4) {
+      // Convert #RGBA to #RRGGBBAA
+      cleanHex = cleanHex.split('').map(char => char + char).join('');
+    } else if (cleanHex.length === 6) {
+      // Add full alpha to #RRGGBB
+      cleanHex += 'FF';
+    }
+    
+    const bigint = parseInt(cleanHex, 16);
+    const r = (bigint >> 24) & 255;
+    const g = (bigint >> 16) & 255;
+    const b = (bigint >> 8) & 255;
+    const a = (bigint & 255) / 255;
+    
+    return [r, g, b, parseFloat(a.toFixed(2))];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HEX to RGBA: ${e.message}`);
+  }
+};
+
+// * HSL /////
+const hslTorgb = (hsl: HSL) => {
+  try {
+    const validHsl = validateOrThrow<HSL>(
+      hsl, 
+      'hsl', 
+      'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+    );
+    
+    const h = validHsl[0] / 360;
+    const s = validHsl[1] / 100;
+    const l = validHsl[2] / 100;
+    
+    let r, g, b;
+    
+    if (s === 0) {
+      r = g = b = l; // achromatic
     } else {
-      val = t1;
+      const hue2rgb = (p: number, q: number, t: number) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
     }
-
-    rgb[i] = val * 255;
+    
+    return [
+      Math.round(r * 255),
+      Math.round(g * 255),
+      Math.round(b * 255)
+    ];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HSL to RGB: ${e.message}`);
   }
-
-  return rgb;
 };
 
-const hslTohex = (hsl: number[]) => {
-  return rgbTohex(hslTorgb(hsl));
+const hslTohex = (hsl: HSL) => {
+  try {
+    const validHsl = validateOrThrow<HSL>(
+      hsl, 
+      'hsl',
+      'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+    );
+    
+    const rgb = hslTorgb(validHsl);
+    return rgbTohex(rgb);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HSL to HEX: ${e.message}`);
+  }
 };
 
-const hslTohsv = (hsl: number[]) => {
-  return rgbTohsv(hslTorgb(hsl));
+const hslTohsv = (hsl: HSL) => {
+  try {
+    const validHsl = validateOrThrow<HSL>(
+      hsl, 
+      'hsl',
+      'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+    );
+    
+    const h = validHsl[0];
+    const s = validHsl[1] / 100;
+    const l = validHsl[2] / 100;
+    
+    let v = l + s * Math.min(l, 1 - l);
+    let sv = v === 0 ? 0 : 2 * (1 - l / v);
+    
+    return [h, Math.round(sv * 100), Math.round(v * 100)];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert HSL to HSV: ${e.message}`);
+  }
 };
 
+// * CYMK ///
 // need revision - inaccurate results
-const cmykTorgb = (cmyk: number[]) => {
-  const c = cmyk[0] / 100;
-  const m = cmyk[1] / 100;
-  const y = cmyk[2] / 100;
-  const k = cmyk[3] / 100;
-
-  const rgb01 = [
-    Math.round((1 - Math.min(1, c * (1 - k) + k)) * 100),
-    Math.round((1 - Math.min(1, m * (1 - k) + k)) * 100),
-    Math.round((1 - Math.min(1, y * (1 - k) + k)) * 100),
-  ];
-  return rgb01;
-};
-
-const cmykTohex = (cmyk: number[]) => {
-  return rgbTohex(cmykTorgb(cmyk));
-};
-
-const cmykTohsl = (cmyk: number[]) => {
-  return rgbTohsl(cmykTorgb(cmyk));
-};
-
-const randomcolor = () => {
-  const alphabet = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += alphabet[Math.floor(Math.random() * 16)];
+const cmykTorgb = (cmyk: CMYK) => {
+  try {
+    const validCmyk = validateOrThrow<CMYK>(
+      cmyk, 
+      'cymk', 
+      'Invalid CMYK value. Expected an array with c,m,y,k values between 0-100.'
+    );
+    
+    const c = validCmyk[0] / 100;
+    const m = validCmyk[1] / 100;
+    const y = validCmyk[2] / 100;
+    const k = validCmyk[3] / 100;
+    
+    const r = Math.round(255 * (1 - c) * (1 - k));
+    const g = Math.round(255 * (1 - m) * (1 - k));
+    const b = Math.round(255 * (1 - y) * (1 - k));
+    
+    return [r, g, b];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert CMYK to RGB: ${e.message}`);
   }
-  return color;
+};
+
+const cmykTohex = (cmyk: CMYK) => {
+  try {
+    const validCmyk = validateOrThrow<CMYK>(
+      cmyk, 
+      'cymk', 
+      'Invalid CMYK value. Expected an array with c,m,y,k values between 0-100.'
+    );
+    
+    const rgb = cmykTorgb(validCmyk);
+    return rgbTohex(rgb);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert CMYK to HEX: ${e.message}`);
+  }
+};
+
+const cmykTohsl = (cmyk: CMYK) => {
+  try {
+    const validCmyk = validateOrThrow<CMYK>(
+      cmyk, 
+      'hsl', 
+      'Invalid CMYK value. Expected an array with c,m,y,k values between 0-100.'
+    );
+    
+    const rgb = cmykTorgb(validCmyk);
+    return rgbTohsl(rgb);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert CMYK to HSL: ${e.message}`);
+  }
+};
+
+// * Random Color ////
+const randomcolor = (options?: {
+  format?: 'hex' | 'rgb' | 'hsl';
+  hue?: number | [number, number];
+  saturation?: number | [number, number];
+  lightness?: number | [number, number];
+}): HEX | RGB | HSL => {
+  try {
+    const format = options?.format || 'hex';
+
+    // Generate random HSL values
+    const h = getRandomValue(options?.hue, 0, 359);
+    const s = getRandomValue(options?.saturation, 0, 100);
+    const l = getRandomValue(options?.lightness, 0, 100);
+
+    const hsl: HSL = [h, s, l];
+
+    // Convert to requested format
+    switch (format) {
+      case 'hex':
+        return hslTohex(hsl) as HEX;
+      case 'rgb':
+        return hslTorgb(hsl) as RGB;
+      case 'hsl':
+      default:
+        return hsl as HSL;
+    }
+  } catch (e: any) {
+    throw new ColorConversionError(`Failed to generate random color: ${e.message}`);
+  }
 };
 
 export default {
@@ -300,6 +468,7 @@ export default {
   hexTohsl,
   hexTohsv,
   hexTocmyk,
+  hexToRgba,
 
   hslTorgb,
   hslTohex,
