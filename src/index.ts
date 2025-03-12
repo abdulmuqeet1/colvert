@@ -1,138 +1,171 @@
+import { RGB, RGBA } from "./@types";
+import { clamp, validateOrThrow, ColorConversionError } from "./utils";
 /////////////////////////
 /// rgb --> others //////
 /////////////////////////
 
-const rgbToHexconvetion = (num: number) => {
-  let hexv = num.toString(16);
+const rgbToHexConversion = (num: number): string => {
+  let hexv = Math.round(clamp(num, 0, 255)).toString(16);
   if (hexv.length < 2) {
     hexv = "0" + hexv;
   }
   return hexv;
 };
 
-const rgbTohex = (rgb: number[]) => {
-  const r = rgbToHexconvetion(Math.round(rgb[0]));
-  const g = rgbToHexconvetion(Math.round(rgb[1]));
-  const b = rgbToHexconvetion(Math.round(rgb[2]));
+const rgbTohex = (rgb: number[]) => { // TODO: update name to rgbToHex & and check backward compatibility compatibility
+  try {
+    const validRgb = validateOrThrow(
+      rgb, 
+      "rgb",
+      'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+    ) as number[];
+    
+    const r = rgbToHexConversion(validRgb[0]);
+    const g = rgbToHexConversion(validRgb[1]);
+    const b = rgbToHexConversion(validRgb[2]);
 
-  return `#${r}${g}${b}`;
+    return `#${r}${g}${b}`;
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGB to Hex: ${e.message}`);
+  }
 };
 
-const rgbTohsl = (rgb: number[]) => {
+const rgbTohsl = (rgb: number[]) => { // TODO: update name to rgbToHsl & and check backward compatibility compatibility
   try {
-    const r = rgb[0] / 255;
-    const g = rgb[1] / 255;
-    const b = rgb[2] / 255;
+    const validRgb = validateOrThrow<RGB>(
+      rgb, 
+      'rgb', 
+      'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+    );
+    
+    const r = validRgb[0] / 255;
+    const g = validRgb[1] / 255;
+    const b = validRgb[2] / 255;
     const min = Math.min(r, g, b);
     const max = Math.max(r, g, b);
     const delta = max - min;
-    let h: number;
-    let s: number;
+    
+    let h = 0;
+    let s = 0;
+    let l = (min + max) / 2;
 
-    if (max === min) {
-      h = 0;
-    } else if (r === max) {
-      h = (g - b) / delta;
-    } else if (g === max) {
-      h = 2 + (b - r) / delta;
-    } else if (b === max) {
-      h = 4 + (r - g) / delta;
+    if (max !== min) {
+      s = l <= 0.5 ? delta / (max + min) : delta / (2 - max - min);
+      
+      if (r === max) {
+        h = (g - b) / delta + (g < b ? 6 : 0);
+      } else if (g === max) {
+        h = (b - r) / delta + 2;
+      } else if (b === max) {
+        h = (r - g) / delta + 4;
+      }
+      
+      h *= 60;
     }
-
-    h = Math.min(h! * 60, 360); // todo: fix this
-
-    if (h < 0) {
-      h += 360;
-    }
-
-    const l = (min + max) / 2;
-
-    if (max === min) {
-      s = 0;
-    } else if (l <= 0.5) {
-      s = delta / (max + min);
-    } else {
-      s = delta / (2 - max - min);
-    }
-    // console.log([h, s * 100, l * 100]);
 
     return [Math.round(h), Math.round(s * 100), Math.round(l * 100)];
-  } catch (e) {
-    console.error("errror converting rgb to hsl", e);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGB to HSL: ${e.message}`);
   }
 };
 
-const rgbTohsv = (rgb: number[]) => {
-  let rdif;
-  let gdif;
-  let bdif;
-  let h: number;
-  let s: number;
+const rgbTohsv = (rgb: number[]) => { // TODO: update name to rgbToHsv & and check backward compatibility compatibility
+  try {
+    const validRgb = validateOrThrow<RGB>(
+      rgb, 
+      'rgb',
+      'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+    );
+    
+    const r = validRgb[0] / 255;
+    const g = validRgb[1] / 255;
+    const b = validRgb[2] / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    
+    let h = 0;
+    let s = max === 0 ? 0 : delta / max;
+    let v = max;
 
-  const r = rgb[0] / 255;
-  const g = rgb[1] / 255;
-  const b = rgb[2] / 255;
-  const v = Math.max(r, g, b);
-  const diff = v - Math.min(r, g, b);
-  const diffc = function (c: number) {
-    return (v - c) / 6 / diff + 1 / 2;
-  };
-
-  if (diff === 0) {
-    h = 0;
-    s = 0;
-  } else {
-    s = diff / v;
-    rdif = diffc(r);
-    gdif = diffc(g);
-    bdif = diffc(b);
-
-    if (r === v) {
-      h = bdif - gdif;
-    } else if (g === v) {
-      h = 1 / 3 + rdif - bdif;
-    } else if (b === v) {
-      h = 2 / 3 + gdif - rdif;
+    if (delta !== 0) {
+      if (max === r) {
+        h = ((g - b) / delta) % 6;
+      } else if (max === g) {
+        h = (b - r) / delta + 2;
+      } else {
+        h = (r - g) / delta + 4;
+      }
+      
+      h *= 60;
+      if (h < 0) h += 360;
     }
 
-    if (h! < 0) {
-      h! += 1;
-    } else if (h! > 1) {
-      h! -= 1;
-    }
+    return [Math.round(h), Math.round(s * 100), Math.round(v * 100)];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGB to HSV: ${e.message}`);
   }
-
-  return [Math.round(h! * 360), Math.round(s * 100), Math.round(v * 100)];
 };
 
-const rgbTocmyk = (rgb: number[]) => {
-  const r01 = rgb[0] / 255;
-  const g01 = rgb[1] / 255;
-  const b01 = rgb[2] / 255;
+const rgbTocmyk = (rgb: number[]) => { // TODO: check and update
+  try {
+    const validRgb = validateOrThrow<RGB>(
+      rgb, 
+      'rgb',
+      'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+    );
 
-  if (r01 === 0 && g01 === 0 && b01 === 0) return { c: 0, m: 0, y: 0, k: 100 };
+    const r = validRgb[0] / 255;
+    const g = validRgb[1] / 255;
+    const b = validRgb[2] / 255;
+    
+    if (r === 0 && g === 0 && b === 0) {
+      return [0, 0, 0, 100];
+    }
 
-  const k = 1 - Math.max(r01, g01, b01);
-  const c = (1 - r01 - k) / (1 - k);
-  const m = (1 - g01 - k) / (1 - k);
-  const y = (1 - b01 - k) / (1 - k);
+    const k = 1 - Math.max(r, g, b);
+    const c = (1 - r - k) / (1 - k);
+    const m = (1 - g - k) / (1 - k);
+    const y = (1 - b - k) / (1 - k);
 
-  const roundedCmyk = [
-    Math.round(c * 100),
-    Math.round(y * 100),
-    Math.round(m * 100),
-    Math.round(k * 100),
-  ];
-  return roundedCmyk;
+    return [
+      Math.round(c * 100),
+      Math.round(m * 100),
+      Math.round(y * 100),
+      Math.round(k * 100)
+    ];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGB to CMYK: ${e.message}`);
+  }
 };
-/////////////////////////
-/// RGBA --> others /////
-/////////////////////////
+
+export const rgbaToHex = (rgba: RGBA) => {
+  try {
+    const validRgba = validateOrThrow<RGBA>(
+      rgba, 
+      "rgba", 
+      'Invalid RGBA value. Expected an array of 4 numbers, RGB between 0-255 and alpha between 0-1.'
+    );
+    
+    const r = rgbToHexConversion(validRgba[0]);
+    const g = rgbToHexConversion(validRgba[1]);
+    const b = rgbToHexConversion(validRgba[2]);
+    const a = rgbToHexConversion(Math.round(validRgba[3] * 255));
+
+    return `#${r}${g}${b}${a}`;
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGBA to Hex: ${e.message}`);
+  }
+};
 
 /////////////////////////
 /// hex --> others //////
 /////////////////////////
-
 const hexTorgb = (hex: string) => {
   // const match = hex.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
   const match = hex.toString().match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
