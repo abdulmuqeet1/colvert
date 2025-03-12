@@ -2,7 +2,7 @@
   "name": "colvert",
   "version": "1.2.0",
   "description": "color conversion npm package",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "bin": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js",

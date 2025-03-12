@@ -2,7 +2,7 @@
 /// rgb --> others //////
 /////////////////////////
 
-const rgbToHexconvetion = (num) => {
+const rgbToHexconvetion = (num: number) => {
   let hexv = num.toString(16);
   if (hexv.length < 2) {
     hexv = "0" + hexv;
@@ -10,14 +10,15 @@ const rgbToHexconvetion = (num) => {
   return hexv;
 };
 
-const rgbTohex = (rgb) => {
+const rgbTohex = (rgb: number[]) => {
   const r = rgbToHexconvetion(Math.round(rgb[0]));
   const g = rgbToHexconvetion(Math.round(rgb[1]));
   const b = rgbToHexconvetion(Math.round(rgb[2]));
 
   return `#${r}${g}${b}`;
 };
-const rgbTohsl = (rgb) => {
+
+const rgbTohsl = (rgb: number[]) => {
   try {
     const r = rgb[0] / 255;
     const g = rgb[1] / 255;
@@ -25,8 +26,8 @@ const rgbTohsl = (rgb) => {
     const min = Math.min(r, g, b);
     const max = Math.max(r, g, b);
     const delta = max - min;
-    let h;
-    let s;
+    let h: number;
+    let s: number;
 
     if (max === min) {
       h = 0;
@@ -38,7 +39,7 @@ const rgbTohsl = (rgb) => {
       h = 4 + (r - g) / delta;
     }
 
-    h = Math.min(h * 60, 360);
+    h = Math.min(h! * 60, 360); // todo: fix this
 
     if (h < 0) {
       h += 360;
@@ -61,19 +62,19 @@ const rgbTohsl = (rgb) => {
   }
 };
 
-const rgbTohsv = (rgb) => {
+const rgbTohsv = (rgb: number[]) => {
   let rdif;
   let gdif;
   let bdif;
-  let h;
-  let s;
+  let h: number;
+  let s: number;
 
   const r = rgb[0] / 255;
   const g = rgb[1] / 255;
   const b = rgb[2] / 255;
   const v = Math.max(r, g, b);
   const diff = v - Math.min(r, g, b);
-  const diffc = function (c) {
+  const diffc = function (c: number) {
     return (v - c) / 6 / diff + 1 / 2;
   };
 
@@ -94,17 +95,17 @@ const rgbTohsv = (rgb) => {
       h = 2 / 3 + gdif - rdif;
     }
 
-    if (h < 0) {
-      h += 1;
-    } else if (h > 1) {
-      h -= 1;
+    if (h! < 0) {
+      h! += 1;
+    } else if (h! > 1) {
+      h! -= 1;
     }
   }
 
-  return [Math.round(h * 360), Math.round(s * 100), Math.round(v * 100)];
+  return [Math.round(h! * 360), Math.round(s * 100), Math.round(v * 100)];
 };
 
-const rgbTocmyk = (rgb) => {
+const rgbTocmyk = (rgb: number[]) => {
   const r01 = rgb[0] / 255;
   const g01 = rgb[1] / 255;
   const b01 = rgb[2] / 255;
@@ -132,8 +133,9 @@ const rgbTocmyk = (rgb) => {
 /// hex --> others //////
 /////////////////////////
 
-const hexTorgb = (hex) => {
-  const match = hex.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
+const hexTorgb = (hex: string) => {
+  // const match = hex.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
+  const match = hex.toString().match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
   if (!match) {
     return [0, 0, 0];
   }
@@ -156,18 +158,18 @@ const hexTorgb = (hex) => {
 
   return [r, g, b];
 };
-const hexTohsl = (hex) => {
+const hexTohsl = (hex: string) => {
   return rgbTohsl(hexTorgb(hex));
 };
-const hexTohsv = (hex) => {
+const hexTohsv = (hex: string) => {
   return rgbTohsv(hexTorgb(hex));
 };
 
-const hexTocmyk = (hex) => {
+const hexTocmyk = (hex: string) => {
   return rgbTocmyk(hexTorgb(hex));
 };
 
-const hslTorgb = (hsl) => {
+const hslTorgb = (hsl: number[]) => {
   const h = hsl[0] / 360;
   const s = hsl[1] / 100;
   const l = hsl[2] / 100;
@@ -215,16 +217,16 @@ const hslTorgb = (hsl) => {
   return rgb;
 };
 
-const hslTohex = (hsl) => {
+const hslTohex = (hsl: number[]) => {
   return rgbTohex(hslTorgb(hsl));
 };
 
-const hslTohsv = (hsl) => {
+const hslTohsv = (hsl: number[]) => {
   return rgbTohsv(hslTorgb(hsl));
 };
 
 // need revision - inaccurate results
-const cmykTorgb = (cmyk) => {
+const cmykTorgb = (cmyk: number[]) => {
   const c = cmyk[0] / 100;
   const m = cmyk[1] / 100;
   const y = cmyk[2] / 100;
@@ -238,11 +240,11 @@ const cmykTorgb = (cmyk) => {
   return rgb01;
 };
 
-const cmykTohex = (cmyk) => {
+const cmykTohex = (cmyk: number[]) => {
   return rgbTohex(cmykTorgb(cmyk));
 };
 
-const cmykTohsl = (cmyk) => {
+const cmykTohsl = (cmyk: number[]) => {
   return rgbTohsl(cmykTorgb(cmyk));
 };
 
@@ -255,7 +257,7 @@ const randomcolor = () => {
   return color;
 };
 
-module.exports = {
+export default {
   rgbTohsl,
   rgbTohex,
   rgbTohsv,
