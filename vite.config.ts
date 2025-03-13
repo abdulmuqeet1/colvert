@@ -18,7 +18,7 @@ export default defineConfig({
       },
     },
     minify: 'terser',
-    sourcemap: true,
+    sourcemap: process.env.NODE_ENV === 'development',
     outDir: 'dist',
     emptyOutDir: true,
   },
