@@ -1,4 +1,4 @@
-import * as colorConversion from "./colorConvertion"
+import * as colorConversion from "./colorConversion"
 import * as utils from "./utils"
 
 export default {

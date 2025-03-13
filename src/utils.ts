@@ -9,7 +9,7 @@ import {
     rgbToHsl,
     hslToRgb,
     rgbToHex,
-} from "./colorConvertion";
+} from "./colorConversion";
 
 // * Random Color/Scheme ////
 const randomcolor = (options?: { // TODO: update name
