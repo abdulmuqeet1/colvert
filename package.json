@@ -1,12 +1,11 @@
 {
   "name": "colvert",
-  "version": "1.0.0",
-  "description": "color conversion npm package",
-  "main": "src/index.js",
+  "version": "2.0.0",
+  "description": "color conversion and utility npm package",
+  "main": "src/index.ts",
   "bin": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/index.ts"
   },
   "repository": {
     "type": "git",
