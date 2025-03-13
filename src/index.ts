@@ -1,4 +1,3 @@
-import { CMYK, HEX, HSL, HSV, RGB, RGBA } from "./@types";
 import { clamp, validateOrThrow, ColorConversionError, getRandomValue } from "./utils";
 
 // * RGB ///
@@ -10,7 +9,7 @@ const rgbToHexConversion = (num: number): string => {
   return hexv;
 };
 
-const rgbTohex = (rgb: number[]) => { // TODO: update name to rgbToHex & and check backward compatibility compatibility
+const rgbTohex = (rgb: RGB) => { // TODO: update name to rgbToHex & and check backward compatibility compatibility
   try {
     const validRgb = validateOrThrow(
       rgb, 
@@ -29,7 +28,7 @@ const rgbTohex = (rgb: number[]) => { // TODO: update name to rgbToHex & and che
   }
 };
 
-const rgbTohsl = (rgb: number[]) => { // TODO: update name to rgbToHsl & and check backward compatibility compatibility
+const rgbTohsl = (rgb: RGB) => { // TODO: update name to rgbToHsl & and check backward compatibility compatibility
   try {
     const validRgb = validateOrThrow<RGB>(
       rgb, 
@@ -69,7 +68,7 @@ const rgbTohsl = (rgb: number[]) => { // TODO: update name to rgbToHsl & and che
   }
 };
 
-const rgbTohsv = (rgb: number[]) => { // TODO: update name to rgbToHsv & and check backward compatibility compatibility
+const rgbTohsv = (rgb: RGB) => { // TODO: update name to rgbToHsv & and check backward compatibility compatibility
   try {
     const validRgb = validateOrThrow<RGB>(
       rgb, 
@@ -108,7 +107,7 @@ const rgbTohsv = (rgb: number[]) => { // TODO: update name to rgbToHsv & and che
   }
 };
 
-const rgbTocmyk = (rgb: number[]) => { // TODO: check and update
+const rgbTocmyk = (rgb: RGB) => { // TODO: check and update
   try {
     const validRgb = validateOrThrow<RGB>(
       rgb, 
@@ -339,7 +338,7 @@ const hslTohex = (hsl: HSL) => {
     );
     
     const rgb = hslTorgb(validHsl);
-    return rgbTohex(rgb);
+    return rgbTohex(rgb as RGB);
   } catch (e: any) {
     if (e instanceof ColorConversionError) throw e;
     throw new ColorConversionError(`Failed to convert HSL to HEX: ${e.message}`);
@@ -403,7 +402,7 @@ const cmykTohex = (cmyk: CMYK) => {
     );
     
     const rgb = cmykTorgb(validCmyk);
-    return rgbTohex(rgb);
+    return rgbTohex(rgb as RGB);
   } catch (e: any) {
     if (e instanceof ColorConversionError) throw e;
     throw new ColorConversionError(`Failed to convert CMYK to HEX: ${e.message}`);
@@ -419,7 +418,7 @@ const cmykTohsl = (cmyk: CMYK) => {
     );
     
     const rgb = cmykTorgb(validCmyk);
-    return rgbTohsl(rgb);
+    return rgbTohsl(rgb as RGB);
   } catch (e: any) {
     if (e instanceof ColorConversionError) throw e;
     throw new ColorConversionError(`Failed to convert CMYK to HSL: ${e.message}`);

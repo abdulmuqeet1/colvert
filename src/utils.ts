@@ -37,14 +37,14 @@ const isColorValid = (value: Array<number | string> | string, type: string): boo
 }
 
 // Error class for color conversion errors
-export class ColorConversionError extends Error {
-constructor(message: string) {
-    super(message);
-    this.name = 'ColorConversionError';
-}
+class ColorConversionError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ColorConversionError';
+    }
 }
   
-// Helper functions
+// * Helper functions //
 const validateOrThrow = <T>(value: any, type: string, errorMsg: string): T => {
     if (!isColorValid(value, type)) {
         throw new ColorConversionError(errorMsg);
@@ -69,6 +69,7 @@ const getRandomValue = (option: number | [number, number] | undefined, min: numb
 };
 
 export {
+    ColorConversionError,
     isColorValid,
     validateOrThrow,
     clamp,
