@@ -13,4 +13,13 @@ declare global {
     export type LCH = [number, number, number];
     export type XYZ = [number, number, number];
     export type ColorName = string;
+    export interface ColorScheme {
+        base: HEX;
+        analogous: HEX[];
+        complementary: HEX[];
+        triadic: HEX[];
+        tetradic: HEX[];
+        monochromatic: HEX[];
+        splitComplementary: HEX[];
+      }
 }

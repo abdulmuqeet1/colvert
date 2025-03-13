@@ -15,7 +15,7 @@ const rgbTohex = (rgb: RGB) => { // TODO: update name to rgbToHex & and check ba
       rgb, 
       "rgb",
       'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
-    ) as number[];
+    ) as RGB;
     
     const r = rgbToHexConversion(validRgb[0]);
     const g = rgbToHexConversion(validRgb[1]);
@@ -28,7 +28,7 @@ const rgbTohex = (rgb: RGB) => { // TODO: update name to rgbToHex & and check ba
   }
 };
 
-const rgbTohsl = (rgb: RGB) => { // TODO: update name to rgbToHsl & and check backward compatibility compatibility
+const rgbTohsl = (rgb: RGB): HSL => { // TODO: update name to rgbToHsl & and check backward compatibility compatibility
   try {
     const validRgb = validateOrThrow<RGB>(
       rgb, 
@@ -61,7 +61,7 @@ const rgbTohsl = (rgb: RGB) => { // TODO: update name to rgbToHsl & and check ba
       h *= 60;
     }
 
-    return [Math.round(h), Math.round(s * 100), Math.round(l * 100)];
+    return [Math.round(h), Math.round(s * 100), Math.round(l * 100)] as HSL;
   } catch (e: any) {
     if (e instanceof ColorConversionError) throw e;
     throw new ColorConversionError(`Failed to convert RGB to HSL: ${e.message}`);
@@ -197,7 +197,7 @@ const hexTorgb = (hex: HEX): RGB => { // TODO: update name
   }
 };
 
-const hexTohsl = (hex: HEX) => { // TODO: update name
+const hexTohsl = (hex: HEX): HSL => { // TODO: update name
   try {
     const validHex = validateOrThrow<HEX>(
       hex, 
@@ -457,6 +457,75 @@ const randomcolor = (options?: {
   }
 };
 
+export const generateColorScheme = (baseColor: RGB | HEX): ColorScheme => {
+  // Nice articles for understanding color schemes: 
+  // https://www.canva.com/colors/color-wheel/
+  https://careerfoundry.com/en/blog/ui-design/introduction-to-color-theory-and-color-palettes/
+  try {
+    let baseHsl: HSL; // Converting to HSL for easier manipulation
+    if (typeof baseColor === 'string') {
+      baseHsl = hexTohsl(baseColor);
+    } else {
+      baseHsl = rgbTohsl(baseColor);
+    }
+    
+    const h = baseHsl[0];
+    const s = baseHsl[1];
+    const l = baseHsl[2];
+    
+    const schemeHex = typeof baseColor === 'string' ? baseColor : rgbTohex(baseColor);
+
+    // Generate analogous colors(on the color wheel)
+    const analogous: HEX[] = [
+      hslTohex([(h + 30) % 360, s, l]),
+      hslTohex([(h + 330) % 360, s, l])
+    ];
+
+    // Complementary color (opposite on the color wheel)
+    const complementary: HEX[] = [hslTohex([(h + 180) % 360, s, l])];
+
+    // Triadic colors (three colors evenly spaced on the color wheel)
+    const triadic: HEX[] = [
+      hslTohex([(h + 120) % 360, s, l]),
+      hslTohex([(h + 240) % 360, s, l])
+    ];
+
+    // Tetradic colors (four colors forming a rectangle on the color wheel)
+    const tetradic: HEX[] = [
+      hslTohex([(h + 90) % 360, s, l]),
+      hslTohex([(h + 180) % 360, s, l]),
+      hslTohex([(h + 270) % 360, s, l])
+    ];
+
+    // Monochromatic colors (variations of same hue with different lightness/saturation)
+    const monochromatic: HEX[] = [
+      hslTohex([h, Math.max(0, s - 20), l]),
+      hslTohex([h, Math.min(100, s + 20), l]),
+      hslTohex([h, s, Math.max(0, l - 20)]),
+      hslTohex([h, s, Math.min(100, l + 20)])
+    ];
+
+    // Split-complementary colors
+    const splitComplementary: HEX[] = [
+      hslTohex([(h + 150) % 360, s, l]),
+      hslTohex([(h + 210) % 360, s, l])
+    ];
+
+    return {
+      base: schemeHex,
+      analogous,
+      complementary,
+      triadic,
+      tetradic,
+      monochromatic,
+      splitComplementary
+    };
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to generate color scheme: ${e.message}`);
+  }
+};
+
 export default {
   rgbTohsl,
   rgbTohex,
@@ -478,4 +547,5 @@ export default {
   cmykTohsl,
 
   randomcolor,
+  generateColorScheme,
 };
