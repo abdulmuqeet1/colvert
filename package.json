@@ -1,25 +1,46 @@
 {
   "name": "colvert",
   "version": "2.0.0",
-  "description": "color conversion and utility npm package",
-  "main": "src/index.ts",
-  "bin": "src/index.js",
+  "description": "color conversion npm package",
+  "type": "module",
+  "main": "./dist/colvert.umd.js",
+  "module": "./dist/colvert.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/colvert.es.js",
+      "require": "./dist/colvert.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "nodemon src/index.ts"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "prepublishBuild": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/abdulmuqeet1/colvert.git"
   },
   "keywords": [
-    "color conversion",
+    "color",
+    "colour",
     "color convert",
+    "color conversion",
+    "convert",
+    "converter",
+    "color utility",
     "rgb",
     "hex",
     "hsl",
     "hsv",
     "cymk",
-    "random color generator"
+    "random color",
+    "color scheme"
   ],
   "dependencies": {},
   "author": {
@@ -30,6 +51,11 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/abdulmuqeet1/colvert/issues"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "vite": "^6.2.1",
+    "terser": "^5.16.1"
   },
   "homepage": "https://github.com/abdulmuqeet1/colvert#readme"
 }

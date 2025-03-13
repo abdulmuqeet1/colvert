@@ -1,76 +1,286 @@
-// Check if color value is valid
-const isColorValid = (value: Array<number | string> | string, type: string): boolean => {
-    switch (type) {
-        case 'rgb': {
-            if (!Array.isArray(value) || value.length !== 3) return false;
-            return value.every(val => typeof val === 'number' && val >= 0 && val <= 255);
-        }
-        case 'rgba': {
-            if (!Array.isArray(value) || value.length !== 4) return false;
-            return value.slice(0, 3).every(val => typeof val === 'number' && val >= 0 && val <= 255) &&
-                typeof value[3] === 'number' && value[3] >= 0 && value[3] <= 1;
-        }
-        case 'hsl': {
-            if (!Array.isArray(value) || value.length !== 3) return false;
-            return typeof value[0] === 'number' && value[0] >= 0 && value[0] <= 360 &&
-                typeof value[1] === 'number' && value[1] >= 0 && value[1] <= 100 &&
-                typeof value[2] === 'number' && value[2] >= 0 && value[2] <= 100;
-        }
-        case 'hsv': {
-            if (!Array.isArray(value) || value.length !== 3) return false;
-            return typeof value[0] === 'number' && value[0] >= 0 && value[0] <= 360 &&
-                typeof value[1] === 'number' && value[1] >= 0 && value[1] <= 100 &&
-                typeof value[2] === 'number' && value[2] >= 0 && value[2] <= 100;
-        }
-        case 'cmyk': {
-            if (!Array.isArray(value) || value.length !== 4) return false;
-            return value.every(val => typeof val === 'number' && val >= 0 && val <= 100);
-        }
-        case 'hex': {
-            if (typeof value !== 'string') return false;
-            return /^#([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(value);
-        }
-        default: {
-            return false;
-        }
-    }
-}
+import { clamp,
+    ColorConversionError,
+    validateOrThrow,
+    getRandomValue
+} from "./helper";
+import {
+    hexToHsl,
+    hslToHex,
+    rgbToHsl,
+    hslToRgb,
+    rgbToHex,
+} from "./colorConversion";
 
-// Error class for color conversion errors
-export class ColorConversionError extends Error {
-constructor(message: string) {
-    super(message);
-    this.name = 'ColorConversionError';
-}
-}
+// * Random Color/Scheme ////
+const randomcolor = (options?: { // TODO: update name
+    format?: 'hex' | 'rgb' | 'hsl';
+    hue?: number | [number, number];
+    saturation?: number | [number, number];
+    lightness?: number | [number, number];
+  }): HEX | RGB | HSL => {
+    try {
+      const format = options?.format || 'hex';
   
-// Helper functions
-const validateOrThrow = <T>(value: any, type: string, errorMsg: string): T => {
-    if (!isColorValid(value, type)) {
-        throw new ColorConversionError(errorMsg);
+      // Generate random HSL values
+      const h = getRandomValue(options?.hue, 0, 359);
+      const s = getRandomValue(options?.saturation, 0, 100);
+      const l = getRandomValue(options?.lightness, 0, 100);
+  
+      const hsl: HSL = [h, s, l];
+  
+      // Convert to requested format
+      switch (format) {
+        case 'hex':
+          return hslToHex(hsl) as HEX;
+        case 'rgb':
+          return hslToRgb(hsl) as RGB;
+        case 'hsl':
+        default:
+          return hsl as HSL;
+      }
+    } catch (e: any) {
+      throw new ColorConversionError(`Failed to generate random color: ${e.message}`);
     }
-    return value as T;
+};
+  
+const generateColorScheme = (baseColor: RGB | HEX): ColorScheme => {
+    // Nice articles for understanding color schemes: 
+    // https://www.canva.com/colors/color-wheel/
+    https://careerfoundry.com/en/blog/ui-design/introduction-to-color-theory-and-color-palettes/
+    try {
+      let baseHsl: HSL; // Converting to HSL for easier manipulation
+      if (typeof baseColor === 'string') {
+        baseHsl = hexToHsl(baseColor);
+      } else {
+        baseHsl = rgbToHsl(baseColor);
+      }
+      
+      const h = baseHsl[0];
+      const s = baseHsl[1];
+      const l = baseHsl[2];
+      
+      const schemeHex = typeof baseColor === 'string' ? baseColor : rgbToHex(baseColor);
+  
+      // Generate analogous colors(on the color wheel)
+      const analogous: HEX[] = [
+        hslToHex([(h + 30) % 360, s, l]),
+        hslToHex([(h + 330) % 360, s, l])
+      ];
+  
+      // Complementary color (opposite on the color wheel)
+      const complementary: HEX[] = [hslToHex([(h + 180) % 360, s, l])];
+  
+      // Triadic colors (three colors evenly spaced on the color wheel)
+      const triadic: HEX[] = [
+        hslToHex([(h + 120) % 360, s, l]),
+        hslToHex([(h + 240) % 360, s, l])
+      ];
+  
+      // Tetradic colors (four colors forming a rectangle on the color wheel)
+      const tetradic: HEX[] = [
+        hslToHex([(h + 90) % 360, s, l]),
+        hslToHex([(h + 180) % 360, s, l]),
+        hslToHex([(h + 270) % 360, s, l])
+      ];
+  
+      // Monochromatic colors (variations of same hue with different lightness/saturation)
+      const monochromatic: HEX[] = [
+        hslToHex([h, Math.max(0, s - 20), l]),
+        hslToHex([h, Math.min(100, s + 20), l]),
+        hslToHex([h, s, Math.max(0, l - 20)]),
+        hslToHex([h, s, Math.min(100, l + 20)])
+      ];
+  
+      // Split-complementary colors
+      const splitComplementary: HEX[] = [
+        hslToHex([(h + 150) % 360, s, l]),
+        hslToHex([(h + 210) % 360, s, l])
+      ];
+  
+      return {
+        base: schemeHex,
+        analogous,
+        complementary,
+        triadic,
+        tetradic,
+        monochromatic,
+        splitComplementary
+      };
+    } catch (e: any) {
+      if (e instanceof ColorConversionError) throw e;
+      throw new ColorConversionError(`Failed to generate color scheme: ${e.message}`);
+    }
 };
 
-const clamp = (num: number, min: number, max: number): number => {
-    return Math.min(Math.max(num, min), max);
+// * Filters //
+const lighten = (color: RGB | HEX | HSL, amount: number) => {
+    try {
+      const normalizedAmount = clamp(amount, 0, 100) / 100;
+      
+      if (typeof color === 'string') {
+        const hsl = hexToHsl(color);
+        const newL = Math.min(100, hsl[2] + Math.round(normalizedAmount * 100));
+        return hslToHex([hsl[0], hsl[1], newL]);
+      } else if (color.length === 3) {
+        if (Boolean(validateOrThrow(
+          color, 
+          "rgb",
+          'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+        ))) {
+          const hsl = rgbToHsl(color as RGB);
+          const newL = Math.min(100, hsl[2] + Math.round(normalizedAmount * 100));
+          if (Boolean(validateOrThrow(
+            [hsl[0], hsl[1], newL],
+            "hsl",
+            'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+          ))) {
+            return hslToRgb([hsl[0], hsl[1], newL]) as typeof color;
+          }
+        } else if (Boolean(validateOrThrow(
+          color, 
+          "hsl",
+          'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+        ))) {
+          const hsl = color as HSL;
+          const newL = Math.min(100, hsl[2] + Math.round(normalizedAmount * 100));
+          return [hsl[0], hsl[1], newL] as typeof color;
+        }
+      }
+      
+      throw new ColorConversionError('Unsupported color format for lighten function');
+    } catch (e: any) {
+      if (e instanceof ColorConversionError) throw e;
+      throw new ColorConversionError(`Failed to lighten color: ${e.message}`);
+    }
 };
-
-const getRandomValue = (option: number | [number, number] | undefined, min: number, max: number): number => {
-    if (option === undefined) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-    } else if (Array.isArray(option)) {
-    const rangeMin = clamp(option[0], min, max);
-    const rangeMax = clamp(option[1], min, max);
-    return Math.floor(Math.random() * (rangeMax - rangeMin + 1)) + rangeMin;
-    } else {
-    return clamp(option, min, max);
+  
+const darken = (color: RGB | HEX | HSL, amount: number) => {
+    try {
+      const normalizedAmount = clamp(amount, 0, 100) / 100;
+  
+      if (typeof color === 'string') {
+        const hsl = hexToHsl(color);
+        const newL = Math.max(0, hsl[2] - Math.round(normalizedAmount * 100));
+        return hslToHex([hsl[0], hsl[1], newL]);
+      } else if (color.length === 3) {
+        if (Boolean(validateOrThrow(
+          color, 
+          "rgb",
+          'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+        ))) {
+          const hsl = rgbToHsl(color as RGB);
+          const newL = Math.max(0, hsl[2] - Math.round(normalizedAmount * 100));
+          return hslToRgb([hsl[0], hsl[1], newL]) as typeof color;
+        } else if (Boolean(validateOrThrow(
+          color, 
+          "hsl",
+          'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+        ))) {
+          const hsl = color as HSL;
+          const newL = Math.max(0, hsl[2] - Math.round(normalizedAmount * 100));
+          return [hsl[0], hsl[1], newL] as typeof color;
+        }
+      }
+      
+      throw new ColorConversionError('Unsupported color format for darken function');
+    } catch (e: any) {
+      if (e instanceof ColorConversionError) throw e;
+      throw new ColorConversionError(`Failed to darken color: ${e.message}`);
+    }
+};
+  
+const saturate = (color: RGB | HEX | HSL, amount: number) => {
+    try {
+      const normalizedAmount = clamp(amount, 0, 100) / 100;
+      
+      if (typeof color === 'string') {
+        const hsl = hexToHsl(color);
+        const newS = Math.min(100, hsl[1] + Math.round(normalizedAmount * 100));
+        return hslToHex([hsl[0], newS, hsl[2]]);
+      } else if (color.length === 3) {
+        if (Boolean(validateOrThrow(
+          color, 
+          "rgb",
+          'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+        ))) {
+          const hsl = rgbToHsl(color as RGB);
+          const newS = Math.min(100, hsl[1] + Math.round(normalizedAmount * 100));
+          return hslToRgb([hsl[0], newS, hsl[2]]) as typeof color;
+        } else if (Boolean(validateOrThrow(
+          color, 
+          "hsl",
+          'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+        ))) {
+          const hsl = color as HSL;
+          const newS = Math.min(100, hsl[1] + Math.round(normalizedAmount * 100));
+          return [hsl[0], newS, hsl[2]] as typeof color;
+        }
+      }
+      
+      throw new ColorConversionError('Unsupported color format for saturate function');
+    } catch (e: any) {
+      if (e instanceof ColorConversionError) throw e;
+      throw new ColorConversionError(`Failed to saturate color: ${e.message}`);
+    }
+};
+  
+const desaturate = (color: RGB | HEX | HSL, amount: number) => {
+    try {
+      const normalizedAmount = clamp(amount, 0, 100) / 100;
+  
+      if (typeof color === 'string') {
+        const hsl = hexToHsl(color);
+        const newS = Math.max(0, hsl[1] - Math.round(normalizedAmount * 100));
+        return hslToHex([hsl[0], newS, hsl[2]]);
+      } else if (color.length === 3) {
+        if (Boolean(validateOrThrow(
+          color, 
+          "rgb",
+          'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+        ))) {
+          const hsl = rgbToHsl(color as RGB);
+          const newS = Math.max(0, hsl[1] - Math.round(normalizedAmount * 100));
+          return hslToRgb([hsl[0], newS, hsl[2]]) as typeof color;
+        } else if (Boolean(validateOrThrow(
+          color, 
+          "hsl",
+          'Invalid HSL value. Expected an array with h(0-360), s(0-100), l(0-100).'
+        ))) {
+          const hsl = color as HSL;
+          const newS = Math.max(0, hsl[1] - Math.round(normalizedAmount * 100));
+          return [hsl[0], newS, hsl[2]] as typeof color;
+        }
+      }
+      
+      throw new ColorConversionError('Unsupported color format for desaturate function');
+    } catch (e: any) {
+      if (e instanceof ColorConversionError) throw e;
+      throw new ColorConversionError(`Failed to desaturate color: ${e.message}`);
+    }
+};
+  
+const grayscale = (color: RGB | HEX | HSL) => {
+    try {
+      return desaturate(color, 100);
+    } catch (e: any) {
+      if (e instanceof ColorConversionError) throw e;
+      throw new ColorConversionError(`Failed to convert color to grayscale: ${e.message}`);
     }
 };
 
 export {
-    isColorValid,
-    validateOrThrow,
-    clamp,
-    getRandomValue,
+    randomcolor,
+    randomcolor as randomColor,
+    generateColorScheme,
+
+    lighten,
+    lighten as lightenColor,
+    darken,
+    darken as darkenColor,
+    saturate,
+    saturate as saturateColor,
+    desaturate,
+    desaturate as desaturateColor,
+    grayscale,
+    grayscale as grayscaleColor,
 };
