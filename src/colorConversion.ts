@@ -160,6 +160,95 @@ const rgbaToHex = (rgba: RGBA) => {
   }
 };
 
+const rgbToLab = (rgb: RGB) => {
+  try {
+    const validRgb = validateOrThrow<RGB>(
+      rgb, 
+      "rgb", 
+      'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+    );
+
+    const xyz = rgbToXyz(validRgb) as XYZ;
+
+    const xRef = 95.047;
+    const yRef = 100.0;
+    const zRef = 108.883;
+
+    let x = xyz[0] / xRef;
+    let y = xyz[1] / yRef;
+    let z = xyz[2] / zRef;
+    
+    x = x > 0.008856 ? Math.pow(x, 1/3) : (7.787 * x) + (16/116);
+    y = y > 0.008856 ? Math.pow(y, 1/3) : (7.787 * y) + (16/116);
+    z = z > 0.008856 ? Math.pow(z, 1/3) : (7.787 * z) + (16/116);
+
+    const l = (116 * y) - 16;
+    const a = 500 * (x - y);
+    const b = 200 * (y - z);
+
+    return [Math.round(l), Math.round(a), Math.round(b)];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGB to LAB: ${e.message}`);
+  }
+};
+
+const rgbToXyz = (rgb: RGB) => {
+  try {
+    const validRgb = validateOrThrow<RGB>(
+      rgb, 
+      "rgb", 
+      'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+    );
+    
+    let r = validRgb[0] / 255;
+    let g = validRgb[1] / 255;
+    let b = validRgb[2] / 255;
+    
+    r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+    g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+    b = b > 0.04045 ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+    
+    r *= 100;
+    g *= 100;
+    b *= 100;
+    
+    const x = r * 0.4124 + g * 0.3576 + b * 0.1805;
+    const y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+    const z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+    
+    return [x, y, z];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGB to XYZ: ${e.message}`);
+  }
+};
+
+const rgbToLch = (rgb: RGB) => {
+  try {
+    const validRgb = validateOrThrow<RGB>(
+      rgb, 
+      'rgb', 
+      'Invalid RGB value. Expected an array of 3 numbers between 0-255.'
+    );
+
+    const lab = rgbToLab(validRgb) as LAB;
+    
+    const l = lab[0];
+    const c = Math.sqrt(Math.pow(lab[1], 2) + Math.pow(lab[2], 2));
+
+    let h = Math.atan2(lab[2], lab[1]) * (180 / Math.PI);
+    if (h < 0) {
+      h += 360;
+    }
+
+    return [l, Math.round(c), Math.round(h)];
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to convert RGB to LCH: ${e.message}`);
+  }
+};
+
 // * HEX ////
 const hexTorgb = (hex: HEX): RGB => { // TODO: update name
   try {
@@ -435,6 +524,9 @@ export {
   rgbTocmyk,
   rgbTocmyk as rgbToCmyk,
   rgbaToHex,
+  rgbToLab,
+  rgbToXyz,
+  rgbToLch,
 
   hexTorgb,
   hexTorgb as hexToRgb,
