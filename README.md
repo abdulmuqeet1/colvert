@@ -1,87 +1,111 @@
-<h1 align="center">Welcome to colvert 👋</h1>
-<p>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
-  <a href="https://github.com/abdulmuqeet1/colvert#readme" target="_blank">
-    <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
-  </a>
-  <a href="https://github.com/abdulmuqeet1/colvert/graphs/commit-activity" target="_blank">
-    <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
-  </a>
-  <a href="https://github.com/abdulmuqeet1/colvert/blob/master/LICENSE" target="_blank">
-    <img alt="License: MIT" src="https://img.shields.io/github/license/abdulmuqeet1/colvert" />
-  </a>
-</p>
+# Colvert 🎨
 
-> color value conversion package
+> A comprehensive color conversion and manipulation package for JavaScript/TypeScript
 
-### 🏠 [Homepage](https://github.com/abdulmuqeet1/colvert#readme)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?cacheSeconds=2592000)](#)
+[![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen.svg)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](#)
 
-## Install
+## Features
 
-```sh
-npm i colvert
+- 🔄 Convert between different color formats (RGB, HEX, HSL, CMYK)
+- 🎨 Generate random colors
+- ✨ Manipulate colors (lighten, darken, saturate, desaturate)
+- 🌈 Generate color schemes
+- 💪 TypeScript support
+- 🚀 Zero dependencies
 
-or npm install colvert
-```
+## Installation
 
-```sh
-const conv = require("colvert");
+```bash
+npm install colvert
+# or
+yarn add colvert
 ```
 
 ## Usage
 
-```sh
+```typescript
+import { 
+  hexToRgb, 
+  rgbToHex, 
+  randomColor,
+  lighten,
+  generateColorScheme 
+} from 'colvert';
 
-const col = conv.hexTorgb("#0A167B");   // returns [10,22,123]
+// Convert HEX to RGB
+const rgb = hexToRgb('#0A167B');  // returns [10, 22, 123]
 
-const col = conv.hexTohsl("#11191B");   // returns [192,23,9]
+// Convert RGB to HEX
+const hex = rgbToHex([23, 180, 60]);  // returns "#17b43c"
 
-const col = conv.rgbTohex([23, 180, 60]);   // returns "#17b43c"
+// Generate a random color
+const randomHex = randomColor();  // returns random color in HEX format
 
-const col = conv.randomcolor();   // returns random color(hex)
+// Lighten a color by 20%
+const lightened = lighten('#ff0000', 20);  // returns lightened color in HEX
 
-
+// Generate a color scheme
+const scheme = generateColorScheme('#ff0000', 5);  // returns array of 5 harmonious colors
 ```
 
-## Functions
+## API Reference
 
-- rgbTohsl
-- rgbTohex
-- rgbTocmyk
+### Color Conversion Functions
 
-- hexTorgb
-- hexTohsl
-- hexTocmyk
+#### RGB Conversions
+- `rgbToHex(rgb: [number, number, number]): string`
+- `rgbToHsl(rgb: [number, number, number]): [number, number, number]`
+- `rgbToHsv(rgb: [number, number, number]): [number, number, number]`
+- `rgbToCmyk(rgb: [number, number, number]): [number, number, number, number]`
 
-- hslTorgb
-- hslTohex
-- hslTohsv
+#### HEX Conversions
+- `hexToRgb(hex: string): [number, number, number]`
+- `hexToHsl(hex: string): [number, number, number]`
+- `hexToHsv(hex: string): [number, number, number]`
+- `hexToCmyk(hex: string): [number, number, number, number]`
 
-- cmykTorgb
-- cmykTohex
-- cmykTohsl
+#### HSL Conversions
+- `hslToRgb(hsl: [number, number, number]): [number, number, number]`
+- `hslToHex(hsl: [number, number, number]): string`
+- `hslToHsv(hsl: [number, number, number]): [number, number, number]`
 
-- randomcolor
+#### CMYK Conversions
+- `cmykToRgb(cmyk: [number, number, number, number]): [number, number, number]`
+- `cmykToHex(cmyk: [number, number, number, number]): string`
+- `cmykToHsl(cmyk: [number, number, number, number]): [number, number, number]`
 
-## Author
+### Color Manipulation Functions
 
-👤 **abdul**
+- `lighten(color: string, amount: number): string`
+- `darken(color: string, amount: number): string`
+- `saturate(color: string, amount: number): string`
+- `desaturate(color: string, amount: number): string`
+- `invert(color: string): string`
+- `mix(color1: string, color2: string, weight?: number): string`
 
-- Github: [@abdulmuqeet1](https://github.com/abdulmuqeet1)
+### Color Generation Functions
 
-## 🤝 Contributing
+- `randomColor(): string`
+- `generateColorScheme(baseColor: string, count?: number): string[]`
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/abdulmuqeet1/colvert/issues). You can also take a look at the [contributing guide](https://github.com/abdulmuqeet1/colvert/blob/master/CONTRIBUTING.md).
+## Input Formats
 
-## Show your support
+- **RGB**: Array of three numbers [0-255]
+- **HEX**: String starting with '#' followed by 3 or 6 hexadecimal characters
+- **HSL**: Array of [hue (0-360), saturation (0-100), lightness (0-100)]
+- **CMYK**: Array of [cyan (0-100), magenta (0-100), yellow (0-100), key/black (0-100)]
 
-Give a ⭐️ if this project helped you!
+## Contributing
 
-## 📝 License
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/abdulmuqeet1/colvert/issues).
 
-Copyright © 2021 [abdul](https://github.com/abdulmuqeet1).<br />
-This project is [MIT](https://github.com/abdulmuqeet1/colvert/blob/master/LICENSE) licensed.
+## License
+
+This project is [MIT](LICENSE) licensed.
 
 ---
 
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+Made with ❤️ by [Abdul Muqeet](https://github.com/abdulmuqeet1)
