@@ -9,6 +9,7 @@ import {
     rgbToHsl,
     hslToRgb,
     rgbToHex,
+    hexToRgb,
 } from "./colorConversion";
 
 // * Random Color/Scheme ////
@@ -112,6 +113,57 @@ const generateColorScheme = (baseColor: RGB | HEX): ColorScheme => {
     }
 };
 
+// * Accessibility Functions //
+const getLuminance = (color: RGB | HEX): number => {
+  try {
+    const rgb = typeof color === 'string' ? hexToRgb(color) : color;
+
+    // Calculate relative luminance according to WCAG 2.0
+    const sRGB = rgb.map(val => {
+      val = val / 255;
+      return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+    });
+    
+    return 0.2126 * sRGB[0]! + 0.7152 * sRGB[1]! + 0.0722 * sRGB[2]!;
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to calculate luminance: ${e.message}`);
+  }
+};
+
+const getContrastRatio = (color1: RGB | HEX, color2: RGB | HEX): number => {
+  try {
+    const l1 = getLuminance(color1);
+    const l2 = getLuminance(color2);
+
+    // Calculate contrast ratio according to WCAG 2.0
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to calculate contrast ratio: ${e.message}`);
+  }
+};
+
+const isWcagAA = (foreground: RGB | HEX, background: RGB | HEX, isLargeText: boolean = false): boolean => {
+  try {
+    const ratio = getContrastRatio(foreground, background);
+    return isLargeText ? ratio >= 3 : ratio >= 4.5;
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to check WCAG AA compliance: ${e.message}`);
+  }
+};
+
+const isWcagAAA = (foreground: RGB | HEX, background: RGB | HEX, isLargeText: boolean = false): boolean => {
+  try {
+    const ratio = getContrastRatio(foreground, background);
+    return isLargeText ? ratio >= 4.5 : ratio >= 7;
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to check WCAG AAA compliance: ${e.message}`);
+  }
+};
+
 // * Filters //
 const lighten = (color: RGB | HEX | HSL, amount: number) => {
     try {
@@ -153,7 +205,7 @@ const lighten = (color: RGB | HEX | HSL, amount: number) => {
       throw new ColorConversionError(`Failed to lighten color: ${e.message}`);
     }
 };
-  
+
 const darken = (color: RGB | HEX | HSL, amount: number) => {
     try {
       const normalizedAmount = clamp(amount, 0, 100) / 100;
@@ -188,7 +240,7 @@ const darken = (color: RGB | HEX | HSL, amount: number) => {
       throw new ColorConversionError(`Failed to darken color: ${e.message}`);
     }
 };
-  
+
 const saturate = (color: RGB | HEX | HSL, amount: number) => {
     try {
       const normalizedAmount = clamp(amount, 0, 100) / 100;
@@ -268,11 +320,27 @@ const grayscale = (color: RGB | HEX | HSL) => {
     }
 };
 
+const getSuggestedTextColor = (background: RGB | HEX) => {
+  try {
+    const bgLuminance = getLuminance(background);
+    // Return white for dark backgrounds, black for light backgrounds
+    return bgLuminance > 0.5 ? '#000000' : '#ffffff';
+  } catch (e: any) {
+    if (e instanceof ColorConversionError) throw e;
+    throw new ColorConversionError(`Failed to suggest text color: ${e.message}`);
+  }
+};
+
 export {
     randomcolor,
     randomcolor as randomColor,
     generateColorScheme,
+    getSuggestedTextColor,
 
+    getLuminance,
+    getContrastRatio,
+    isWcagAA,
+    isWcagAAA,
     lighten,
     lighten as lightenColor,
     darken,
