@@ -83,8 +83,7 @@ const scheme = generateColorScheme('#ff0000', 5);  // returns array of 5 harmoni
 - `darken(color: string, amount: number): string`
 - `saturate(color: string, amount: number): string`
 - `desaturate(color: string, amount: number): string`
-- `invert(color: string): string`
-- `mix(color1: string, color2: string, weight?: number): string`
+- `grayscale(color: string): string`
 
 ### Color Generation Functions
 
