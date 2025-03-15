@@ -1,16 +1,17 @@
 {
   "name": "colvert",
   "version": "2.0.0",
-  "description": "color conversion npm package",
+  "description": "A comprehensive color conversion and manipulation package for JavaScript/TypeScript",
   "type": "module",
-  "main": "./dist/colvert.umd.js",
-  "module": "./dist/colvert.es.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/colvert.umd.js",
+  "module": "dist/colvert.es.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/colvert.es.js",
-      "require": "./dist/colvert.umd.js"
+      "require": "./dist/colvert.umd.js",
+      "default": "./dist/colvert.umd.js"
     }
   },
   "files": [
@@ -23,7 +24,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "prepublishBuild": "npm run test && npm run build"
+    "prepublishOnly": "npm run test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -58,10 +59,10 @@
     "@types/jest": "^29.5.0",
     "@types/node": "^22.13.10",
     "jest": "^29.5.0",
+    "terser": "^5.16.1",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.0",
-    "vite": "^6.2.1",
-    "terser": "^5.16.1"
+    "vite": "^6.2.1"
   },
   "homepage": "https://github.com/abdulmuqeet1/colvert#readme"
 }
