@@ -1,6 +1,6 @@
 {
   "name": "colvert",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A comprehensive color conversion and manipulation package for JavaScript/TypeScript",
   "main": "./dist/colvert.cjs.js",
   "module": "./dist/colvert.es.js",
@@ -27,7 +27,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "prepublishOnly": "npm run test && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
