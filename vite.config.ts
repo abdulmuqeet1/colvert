@@ -7,7 +7,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'Colvert',
       fileName: (format) => `colvert.${format}.js`,
-      formats: ['es', 'umd'],
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
       // External dependencies that shouldn't be bundled
@@ -15,10 +15,18 @@ export default defineConfig({
       output: {
         // Global variables to use in the UMD build
         globals: {},
+        exports: 'named',
+        format: 'cjs',
+        preserveModules: false,
+        interop: 'auto',
+        esModule: true,
+        generatedCode: {
+          constBindings: true
+        }
       },
     },
     minify: 'terser',
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: true,
     outDir: 'dist',
     emptyOutDir: true,
   },

@@ -2,16 +2,19 @@
   "name": "colvert",
   "version": "2.0.0",
   "description": "A comprehensive color conversion and manipulation package for JavaScript/TypeScript",
-  "type": "module",
-  "main": "dist/colvert.umd.js",
-  "module": "dist/colvert.es.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/colvert.cjs.js",
+  "module": "./dist/colvert.es.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/colvert.es.js",
-      "require": "./dist/colvert.umd.js",
-      "default": "./dist/colvert.umd.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/colvert.es.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/colvert.cjs.js"
+      }
     }
   },
   "files": [
