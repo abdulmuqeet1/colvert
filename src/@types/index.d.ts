@@ -11,12 +11,15 @@ declare global {
     export type LCH = [number, number, number];
     export type XYZ = [number, number, number];
     export interface ColorScheme {
-        base: HEX;
-        analogous: HEX[];
-        complementary: HEX[];
-        triadic: HEX[];
-        tetradic: HEX[];
-        monochromatic: HEX[];
-        splitComplementary: HEX[];
-      }
+      base: HEX;
+      analogous: HEX[];
+      complementary: HEX[];
+      triadic: HEX[];
+      tetradic: HEX[];
+      monochromatic: HEX[];
+      splitComplementary: HEX[];
+    }
+
+    export type ColorInput = RGB | HSL | HSV | CMYK | HEX;
+    export type ColorForContrast = RGB | HEX;
 }
