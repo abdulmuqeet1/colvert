@@ -1,6 +1,6 @@
 {
   "name": "colvert",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A comprehensive color conversion and manipulation package for JavaScript/TypeScript",
   "main": "./dist/colvert.cjs.js",
   "module": "./dist/colvert.es.js",
